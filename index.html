@@ -1,8 +1,12 @@
+
+<!-- Meta Data and Title -->
 <head>
     <meta name="viewport" content="user-scalable=no, width=device-width">
     <meta charset="utf-8">
     <title>inAppBrowser.com</title>
 </head>
+
+<!-- Some HTML Stuff that does not matter anything -->
 <h1>InAppBrowser.com</h1>
 <p class="subtitle">Check if an in-app browser is injecting JavaScript code</p>
 <p id="high-level-summary">
@@ -10,6 +14,7 @@
     and privacy risks to the user.
 </p>
 
+<!-- List of summaries: CLean, Medium, Dangerous, Third-party Browser -->
 <div class="summaries" id="clean-summary">
     <p>✅ This tool couldn't detect any JavaScript injections. However, this doesn't mean there were no code injections. As of iOS 14.3, Apple introduced a new way of running JavaScript code in an "Isolated World", making it impossible for a website to verify
         what code is being executed.</p>
@@ -34,6 +39,8 @@
     <p><b>Please note that there aren't any meaningful conclusions on the output below for browser apps.</b></p>
     <br />
 </div>
+
+<!-- Comments for the obtained Injections and a list of detected JS Commands-->
 <ul id="all-comments">
 </ul>
 <hr style="margin-top: 0px; margin-bottom: 15px" />
@@ -53,6 +60,7 @@
     <p><b>Important:</b> Before jumping to any conclusions, please <a href="https://krausefx.com/blog/announcing-inappbrowsercom-see-what-javascript-commands-get-executed-in-an-in-app-browser" target="_blank">read this post</a>.</p>
 </div>
 
+<!-- Footer of the page -->
 <footer>
     <hr />
     <p>
@@ -64,7 +72,10 @@
         </a> | <a target="_blank" href="https://twitter.com/KrauseFx">@KrauseFx</a></p>
 </footer>
 
+
+<!-- This is the part to Focus on -->
 <script type="text/javascript">
+
     // Fetch the nodes first, before we override the `document` methods
     const resultsList = document.getElementById("resultsList")
     const cleanSummary = document.getElementById("clean-summary")
@@ -75,6 +86,7 @@
         cleanSummary,
     ]
 
+    // ------------------------------------Below is the code to check if the browser is an inapp browser or something else.---------------------------------
     // Check the user agent string if the current browser is a third party browser
     // Currently detecting Brave, Chrome, DuckDuckGo, Firefox, Edge and the Google search app
     let isThirdPartyBrowser = navigator.userAgent.includes("CriOS") || navigator.userAgent.includes("EdgiOS") || navigator.userAgent.includes("FxiOS") || navigator.userAgent.includes("GSA") || navigator.userAgent.includes("DuckDuckGo") || navigator.brave;
@@ -104,6 +116,9 @@
 
     const allComments = document.getElementById("all-comments")
     const summary = document.getElementById("summary")
+
+    // ---------------------------------All the code below checks for injections---------------------------------------------------
+    // A list of js functions that are ...
     const denyList = [
         "globalThis",
         "Object",
@@ -133,6 +148,7 @@
         "toString"
     ]
 
+    // A dictionary with dangerous code as key and descrition as value
     const potentiallyDangerous = {
         "createElement('script'": "Injects external JavaScript code",
         "http://": "Uses an unencrypted URL, making the whole page insecure",
@@ -147,12 +163,16 @@
         "addEventListener('message'": "Monitors all JavaScript messages, this can be used for many things, including communication with iframes",
         "addEventListener('focusin'": "Monitors when the user focuses on an element, like a textfield",
     }
+    
+    // JS Functions that cannot cause any danger
     const neutralNotes = {
         "createElement('style')": "Adds CSS code, allows app to customize appearance of website",
         "addEventListener('focus'": "Monitors whenever you focus a text field or other element",
         "addEventListener('blur'": "Monitors whenever you remove the focus from an element",
         "querySelectorAll('img'": "Accesses all images on the page",
     }
+
+    // Browser taking the website info = Not dangerous at all
     const goodNotes = {
         "querySelector('head > meta[property=\"og:site_name\"]')": "Gets the website's name",
         "querySelector('head > meta[name=\"title\"]')": "Gets the website title",
@@ -164,7 +184,9 @@
     let lastLevel = -1;
     let existingEntries = [];
 
-    function appendEvent(str, level) {
+    // 
+    function appendEvent(str, level) 
+    {
         let classesToUse = ""
         let comments = ""
         let allCommentToPush = null;
@@ -287,6 +309,7 @@
     }
 
     function investigate(node, level) {
+        // initially the node is the main node the document object of html
         for (var prop in node) {
             if (denyList.includes(prop)) {
                 continue;
@@ -295,6 +318,8 @@
             overrideFunction(node, prop, level)
         }
     }
+
+    // Getting the main HTML DOM document object and sending it for investigation
     investigate(document, 1);
 
     const originalAddEventListener = window.addEventListener;
@@ -310,6 +335,8 @@
     }
 </script>
 
+
+<!-- CSS Styling = Not Important -->
 <style type="text/css">
     * {
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
