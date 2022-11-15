@@ -118,7 +118,7 @@
     const summary = document.getElementById("summary")
 
     // ---------------------------------All the code below checks for injections---------------------------------------------------
-    // A list of js functions that are ...
+    // A list of js functions that are not checked by the code
     const denyList = [
         "globalThis",
         "Object",
@@ -256,19 +256,33 @@
         }
     }
 
+    // Overriding the native document functions with our own so that whenever a function is called,
+    // we will know that the in app browser tried to do something.
     function overrideFunction(node, prop, level) {
         if (typeof node[prop] !== "function") {
             return;
         }
         try {
             const original = node[prop]
-            node[prop] = function() {
+            // Replacing native function at node[prop] with this new function
+            node[prop] = function()
+            {
+                console.log("Inside Function")
+                console.log(arguments)
+                // prop contains function names such as creatEvent
                 let str = prop;
+                // arguments is always an empty dictionary but somehow the below if condition is always true.
                 if (arguments) {
+                    // node.constructor.name will most probably return HTMLDocument
+                    // prop is a function name such as addEventListener
+                    // {0:10, 1:20, 2:30}
                     str = `${node.constructor.name}.${prop}(`
-                    str += Object.values(arguments).map((arg) => renderParam(arg)).join(", ")
+                    str += Object.values(arguments)
+                    .map((arg) => renderParam(arg))
+                    .join(", ")
                     str += ")"
                 }
+
                 // `str` would be something like
                 // "HTMLDocument.querySelector('head > meta['property="og:site_name"]')"
 
@@ -302,25 +316,36 @@
                 }
                 return fakeObj;
             }
-            console.log("Sucessfully overwrote " + prop + " on " + node)
+
+
+            // console.log("Sucessfully overwrote " + prop + " on " + node)
         } catch (e) {
             console.error(e);
         }
     }
 
     function investigate(node, level) {
-        // initially the node is the main node the document object of html
+        // initially the node is the main node of the document object of html
+
+        // console.log(node)
         for (var prop in node) {
+
+            // console.log("PROP = ",prop)
+            // console.log("Type of node prop: ",typeof(node[prop]))
             if (denyList.includes(prop)) {
                 continue;
             }
             value = node[prop]
+            // console.log("Value = ", value)
             overrideFunction(node, prop, level)
         }
     }
 
     // Getting the main HTML DOM document object and sending it for investigation
     investigate(document, 1);
+    setTimeout(() => {
+        
+    }, 50000);
 
     const originalAddEventListener = window.addEventListener;
     const originalRemoveEventListener = window.removeEventListener;
